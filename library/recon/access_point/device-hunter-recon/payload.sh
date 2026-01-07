@@ -324,38 +324,4 @@ LOG "$TARGET_MAC"
 
 track_target "$TARGET_MAC"
 LOG "Done!"
-
-Yes, that script looks correct and includes both fixes:
-
-1. **Target MAC selection respects the AP you chose in Recon**  
-```bash
-   if looks_like_mac "$_RECON_SELECTED_AP_MAC_ADDRESS"; then
-     TARGET_MAC="$_RECON_SELECTED_AP_MAC_ADDRESS"
-   elif looks_like_mac "$_RECON_SELECTED_AP_BSSID"; then
-     TARGET_MAC="$_RECON_SELECTED_AP_BSSID"
-   else
-     TARGET_MAC="$(get_target_from_db 2>/dev/null)" || true
-     if ! looks_like_mac "$TARGET_MAC"; then
-       TARGET_MAC="$(get_target_from_recon_api 2>/dev/null)" || true
-     fi
-   fi
-```
-2. **SSID is taken from the selected AP when possible, so it matches the MAC:**
-```bash
-   track_target() {
-     local mac="$1"
-     local ssid=""
-
-     # Prefer Pager Recon-selected SSID if MAC matches
-     if [ "$mac" = "$_RECON_SELECTED_AP_MAC_ADDRESS" ] || [ "$mac" = "$_RECON_SELECTED_AP_BSSID" ]; then
-       if [ -n "$_RECON_SELECTED_AP_SSID" ]; then
-         ssid="$_RECON_SELECTED_AP_SSID"
-       fi
-     fi
-
-     # Fallback if that’s empty
-     [ -z "$ssid" ] && ssid=$(get_ssid_for_mac "$mac")
-     ...
-   }
-```
-
+  
